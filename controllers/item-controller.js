@@ -7,65 +7,48 @@ const {
 } = require('../services/item-service');
 
 const getItemsRoute = (server) => {
-    server.route({
-        handler: () => getAllItems(),
-        method: 'GET',
-        path: '/items'
-    });
+    server.get('/items', (req, res, next) => {
+        const items = getAllItems();
+        res.send(200, items);
+        return next()
+    })
 };
 
 const addItemsRoute = (server) => {
-    server.route({
-        handler: (request, h) => {
-            const item = request.payload;
-
-            addItem(item);
-
-            return h.response(item).code(201);
-        },
-        method: 'POST',
-        path: '/items'
-    });
+    server.post('/items', (req, res, next) => {
+        const item = req.params;
+        addItem(item);
+        res.send(201);
+        return next();
+    })
 };
 
 const modifyItemRoute = (server) => {
-    server.route({
-        handler: (request) => {
-            modifyItem(request.payload);
-
-            return '';
-        },
-        method: 'PUT',
-        path: '/items/{itemId}'
-    });
+    server.put('/items/:itemId', (req, res, next) => {
+        modifyItem(req.params);
+        res.send(200);
+        return next();
+    })
 };
 
 const deleteItemRoute = (server) => {
-    server.route({
-        handler: (request) => {
-            removeItemByItemId(request.params.itemId);
-
-            return '';
-        },
-        method: 'DELETE',
-        path: '/items/{itemId}'
-    });
+    server.del('/items/:itemId', (req, res, next) => {
+        removeItemByItemId(req.params.itemId);
+        res.send(204);
+        return next();
+    })
 };
 
 const getItemByItemIdRoute = (server) => {
-    server.route({
-        handler: (request, h) => {
-            const item = getItemByItemId(request.params.itemId);
-
-            if (!item) {
-                return h.response().code(404);
-            }
-
-            return item;
-        },
-        method: 'GET',
-        path: '/items/{itemId}'
-    });
+    server.get('/items/:itemId', (req, res, next) => {
+        const item = getItemByItemId(req.params.itemId);
+        if (!item) {
+            res.send(404);
+        } else {
+            res.send(200, item);
+        }
+        return next();
+    })
 };
 
 const initItemControllers = (server) => {

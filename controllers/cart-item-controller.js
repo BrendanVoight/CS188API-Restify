@@ -9,81 +9,59 @@ const {
 const {getCartByCartId} = require('../services/cart-service');
 
 const getCartItemsRoute = (server) => {
-    server.route({
-        handler: () => getAllCartItems(),
-        method: 'GET',
-        path: '/cart-items'
-    });
+    server.get('/cart-items', (req, res, next) => {
+        res.send(200, getAllCartItems());
+        return next();
+    })
 };
 
 const addCartItemsRoute = (server) => {
-    server.route({
-        handler: (request, h) => {
-            const item = request.payload;
-
-            addCartItem(item);
-
-            return h.response(item).code(201);
-        },
-        method: 'POST',
-        path: '/cart-items'
-    });
+   server.post('/cart-items', (req, res, next) => {
+       const item = req.params;
+       addCartItem(item);
+       res.send(201);
+       return next();
+   })
 };
 
 const modifyCartItemRoute = (server) => {
-    server.route({
-        handler: (request) => {
-            modifyCartItem(request.payload);
-
-            return '';
-        },
-        method: 'PUT',
-        path: '/cart-items/{cartItemId}'
-    });
+    server.put('/cart-items/:cartItemId', (req, res, next) => {
+        modifyCartItem(req.params);
+        res.send(200);
+        return next();
+    })
 };
 
 const deleteCartItemRoute = (server) => {
-    server.route({
-        handler: (request) => {
-            removeCartItemByCartItemId(request.params.cartItemId);
-
-            return '';
-        },
-        method: 'DELETE',
-        path: '/cart-items/{cartItemId}'
-    });
+    server.del('/cart-items/:cartItemId', (req, res, next) => {
+        removeCartItemByCartItemId(req.params.cartItemId);
+        res.send(204);
+        return next();
+    })
 };
 
 const getCartItemByCartItemIdRoute = (server) => {
-    server.route({
-        handler: (request, h) => {
-            const customer = getCartItemByCartItemId(request.params.cartItemId);
-
-            if (!customer) {
-                return h.response().code(404);
-            }
-
-            return customer;
-        },
-        method: 'GET',
-        path: '/cart-items/{cartItemId}'
+    server.get('/cart-items/:cartItemId', (req, res, next) =>{
+       const cartItem = getCartItemByCartItemId(req.params.cartItemId);
+       if (!cartItem) {
+           res.send(404);
+       } else {
+           res.send(200, cartItem);
+       }
+       return next();
     });
 };
 
 const getCartItemsByCartIdRoute = (server) => {
-    server.route({
-        handler: (request, h) => {
-            const cart = getCartByCartId(request.params.cartId);
-
-            if (!cart) {
-                return h.response().code(404);
-            }
-
-            return getCartItemsByCartId(request.params.cartId);
-        },
-        method: 'GET',
-        path: '/carts/{cartId}/cart-items'
-    });
+    server.get('/carts/:cartId/cart-items', (req, res, next) => {
+        const cartItems = getCartItemsByCartId(req.params.cartId);
+        if (!cartItems) {
+            res.send(404);
+        } else {
+            res.send(200, cartItems);
+        }
+        return next();
+    })
 };
 
 const initCartItemControllers = (server) => {

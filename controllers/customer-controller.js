@@ -8,91 +8,72 @@ const {
 const {getCartsByCustomerId} = require('../services/cart-service');
 
 const getCustomersCartsRoute = (server) => {
-    server.route({
-        handler: (request, h) => {
-            const customerId = request.params.customerId;
-            const customer = getCustomerByCustomerId(customerId);
+    server.get('/customers/:customerId/carts', (req, res, next) => {
+        const customerId = req.params.customerId;
+        const customer = getCustomerByCustomerId(customerId);
 
-            if (!customer) {
-                return h.response().code(404);
-            }
-
-            return getCartsByCustomerId(customerId);
-        },
-        method: 'GET',
-        path: '/customers/{customerId}/carts'
-    });
+        if (!customer) {
+            res.send(404);
+        } else {
+            res.send(200, getCartsByCustomerId(customerId));
+        }
+        return next();
+    })
 };
 
 const getCustomersRoute = (server) => {
-    server.route({
-        handler: () => getAllCustomers(),
-        method: 'GET',
-        path: '/customers'
-    });
+    server.get('/customers', (req, res, next) => {
+        const customers = getAllCustomers();
+        res.send(200, customers);
+        return next();
+    })
 };
 
 const addCustomersRoute = (server) => {
-    server.route({
-        handler: (request, h) => {
-            const customer = request.payload;
+    server.post('/customers', (req, res, next) => {
+        const customer = req.params;
+        addCustomer(customer);
+        res.send(201);
+        return next();
+    })
 
-            addCustomer(customer);
-
-            return h.response(customer).code(201);
-        },
-        method: 'POST',
-        path: '/customers'
-    });
 };
 
 const modifyCustomerRoute = (server) => {
-    server.route({
-        handler: (request) => {
-            modifyCustomer(request.payload);
-
-            return '';
-        },
-        method: 'PUT',
-        path: '/customers/{customerId}'
-    });
+    server.put('/customers/:customerId', (req, res, next) => {
+        modifyCustomer(req.params);
+        res.send(200);
+        return next;
+    })
 };
 
 const deleteCustomerRoute = (server) => {
-    server.route({
-        handler: (request) => {
-            removeCustomerByCustomerId(request.params.customerId);
-
-            return '';
-        },
-        method: 'DELETE',
-        path: '/customers/{customerId}'
-    });
+    server.del('/customers/:customerId', (res, req, next) =>{
+        removeCustomerByCustomerId(req.params.customerId);
+        res.send(204);
+        return next();
+    })
 };
 
 const getCustomerByCustomerIdRoute = (server) => {
-    server.route({
-        handler: (request, h) => {
-            const customer = getCustomerByCustomerId(request.params.customerId);
-
-            if (!customer) {
-                return h.response().code(404);
-            }
-
-            return customer;
-        },
-        method: 'GET',
-        path: '/customers/{customerId}'
-    });
+    server.get('/customers/:customerId', (req, res, next) =>{
+        const customer = getCustomerByCustomerId(req.params.customerId);
+        if (!customer) {
+            res.send(404);
+        } else {
+            res.send(200, customer)
+        }
+        return next();
+    })
 };
 
 const initCustomerControllers = (server) => {
     getCustomersRoute(server);
     getCustomerByCustomerIdRoute(server);
-    getCustomersCartsRoute(server);
     addCustomersRoute(server);
     modifyCustomerRoute(server);
     deleteCustomerRoute(server);
+    getCustomersCartsRoute(server);
 };
 
 module.exports = {
